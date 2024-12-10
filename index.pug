@@ -1,0 +1,10 @@
+extends layout
+block content
+    h1 #{heading}
+   
+    each item in data  
+        p #{item.question_text}
+        p #{item.option_a}
+          p #{item.option_b}
+            p #{item.option_c}
+              p #{item.option_d}
