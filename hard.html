@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hard Level Quiz</title>
+  <link rel="stylesheet" href="Styles.css">
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>Hard Level Quiz</h1>
+    <div id="quiz-container">
+      <!-- Quiz questions will be inserted here -->
+    </div>
+    <button id="submit-button" class="btn" style="display:none;">Submit Quiz</button>
+  </div>
+
+  <script>
+    // Fetch quiz questions from backend
+    async function fetchQuizQuestions() {
+      try {
+        const response = await fetch('http://localhost:3000/api/questions/hard');
+        const questions = await response.json();
+
+        if (questions.length > 0) {
+          renderQuestions(questions);
+        } else {
+          document.getElementById('quiz-container').innerHTML = '<p>No questions found.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching quiz questions:', error);
+        document.getElementById('quiz-container').innerHTML = '<p>Failed to load questions. Please try again later.</p>';
+      }
+    }
+
+    // Render the questions and options
+    function renderQuestions(questions) {
+      const quizContainer = document.getElementById('quiz-container');
+      quizContainer.innerHTML = '';
+
+      questions.forEach((question, index) => {
+        const questionElement = document.createElement('div');
+        questionElement.classList.add('question');
+
+        // Display the question text
+        const questionText = document.createElement('h2');
+        questionText.textContent = `${index + 1}. ${question.question_text}`;
+        questionElement.appendChild(questionText);
+
+        const optionsList = document.createElement('ul');
+        optionsList.classList.add('options');
+
+        // Combine options into an array
+        const options = [
+          { key: 'A', value: question.option_a },
+          { key: 'B', value: question.option_b },
+          { key: 'C', value: question.option_c },
+          { key: 'D', value: question.option_d },
+        ];
+
+        // Render options
+        options.forEach(option => {
+          const optionElement = document.createElement('li');
+          optionElement.classList.add('option');
+          optionElement.textContent = `${option.key}: ${option.value}`;
+          optionElement.dataset.optionKey = option.key; // Add key for validation
+          optionElement.onclick = () => handleOptionClick(optionElement, question.correct_answer);
+          optionsList.appendChild(optionElement);
+        });
+
+        questionElement.appendChild(optionsList);
+        quizContainer.appendChild(questionElement);
+      });
+
+      // Display the submit button
+      const submitButton = document.getElementById('submit-button');
+      submitButton.style.display = 'block';
+    }
+
+    // Handle option click and validate answers
+    let userAnswers = []; // To store user answers
+
+    function handleOptionClick(optionElement, correctAnswer) {
+      const selectedOption = optionElement.dataset.optionKey; // Get the option key (A, B, C, D)
+
+      userAnswers.push({
+        selectedOption,
+        correctAnswer
+      });
+
+      // Apply styling for the selected option
+      optionElement.classList.add(
+        selectedOption === correctAnswer ? 'selected' : 'incorrect'
+      );
+
+      // Disable all options for this question
+      const allOptions = optionElement.parentElement.querySelectorAll('.option');
+      allOptions.forEach(option => {
+        option.style.pointerEvents = 'none'; // Disable clicking
+      });
+    }
+
+    // Submit the quiz and display results
+    document.getElementById('submit-button').onclick = function () {
+      let correctCount = 0;
+
+      // Check answers and count the correct ones
+      userAnswers.forEach(answer => {
+        if (answer.selectedOption === answer.correctAnswer) {
+          correctCount++;
+        }
+      });
+
+      // Show a popup message with the quiz results
+      const resultPopup = document.createElement('div');
+      resultPopup.classList.add('popup');
+      resultPopup.innerHTML = `
+        <div class="popup-content">
+          <h1>Thank you for palying the Quiz</h1>
+          <h2>Quiz Results</h2>
+          <p>You answered ${correctCount} out of ${userAnswers.length} questions correctly!</p>
+          <button onclick="closePopup()">Close</button>
+        </div>
+      `;
+      document.body.appendChild(resultPopup);
+    };
+
+    // Close popup function and navigate to gamepanel.html
+    function closePopup() {
+      const popup = document.querySelector('.popup');
+      if (popup) {
+        document.body.removeChild(popup);
+      }
+      // Redirect to gamepanel.html after closing the popup
+      window.location.href = 'gamepanel.html';
+    }
+
+    // Call fetchQuizQuestions on page load
+    window.onload = fetchQuizQuestions;
+  </script>
+</body>
+</html>

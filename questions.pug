@@ -1,0 +1,12 @@
+//- extends layout
+
+//- block content
+//-   h1 Quiz: #{quiz.category} - Question #{quiz.currentQuestion}
+//-   p #{quiz.questionText}
+//-   form(action='/submit-answer', method='POST')
+//-     each option, index in quiz.options
+//-       div
+//-         input(type='radio', name='answer', value=option)
+//-         label= option
+//-     button(type='submit') Next Question
+//-   p Time Remaining: #{quiz.timeRemaining}
